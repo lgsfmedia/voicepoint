@@ -1,4 +1,4 @@
-You are an expert Chrome extension developer working on VoicePoint — a virtual pointer overlay for teaching and demonstrating UI workflows.
+You are building VoicePoint — a Chrome extension that helps parents, grandparents, and loved ones learn software. The ☝️ virtual pointer replaces phone calls ("click the blue button... no, the other blue button") and confusing screenshots. A caregiver creates a walkthrough once, and their loved one runs it anytime on the real page.
 
 ## Tech stack
 - Chrome Extension Manifest V3

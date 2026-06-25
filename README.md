@@ -1,26 +1,31 @@
 # VoicePoint ☝️
 
-**Every day, millions of people stare at a screen and don't know where to click.** Software onboarding is a universal pain — new hires, customers, and even experienced users get lost in menus, buttons, and workflows that nobody ever taught them. The existing solutions (videos, screenshots, text guides) are all *passive*: they show, but they don't *guide*. VoicePoint solves this by placing a **live, autonomous virtual pointer** (a floating ☝️ hand) on top of any webpage that moves, clicks, and highlights in real time — like a teacher standing behind you, pointing at exactly what to do. This is not another tutorial tool. This is a fundamental rethinking of how software teaches itself: a programmable, scriptable, AI-ready overlay that turns any UI flow into an interactive guided walkthrough without recording a single video or writing a single line of documentation.
+**Every day, millions of people — parents, grandparents, kids, loved ones — stare at a screen and don't know where to click.** Your mom can't find the mute button on Zoom. Your grandfather gets lost filling out a form online. Your teenager doesn't know how to apply for their first job on LinkedIn. You try to help — you describe where to click, you send screenshots with red circles, you record a Loom — but they still get stuck on step 2 and call you again. The existing solutions (videos, screenshots, text guides) are all *passive*: they show, but they don't *guide*. VoicePoint solves this by placing a **live, autonomous virtual pointer** (a floating ☝️ hand) on top of any webpage that moves, clicks, and highlights in real time — like you standing behind them, pointing at exactly what to do, even when you're miles away. This is not another tutorial tool. This is a fundamental rethinking of how software teaches itself: a programmable, scriptable, AI-ready overlay that turns any UI flow into an interactive guided walkthrough without recording a single video or writing a single line of documentation.
 
 ---
 
 ## The Problem
 
-**Software onboarding is broken. And it's a problem everyone has felt.**
+**Your loved ones are locked out of the digital world — and you can't be there to help.**
 
-New hires stare at a screen flooded with menus, buttons, and fields — overwhelmed. Trainers record Loom videos that nobody re-watches. Documentation rots the moment the UI changes. Users get stuck on the same trivial flows, again and again, asking the same questions in Slack.
+Your dad needs to file his taxes online but can't find the "Upload Document" button. Your grandmother got a new iPhone and can't figure out how to Facetime you. Your younger cousin wants to apply for an internship on LinkedIn but the "Create a Post" button might as well be invisible. You've tried:
+
+- **Phone calls** — "No, not that button. The blue one. No, *that* blue one. Look at the top right..."
+- **Screenshots with red circles** — They work once. Then the UI updates and they're useless.
+- **Screen recordings** — You record a 2-minute Loom. They watch it, alt-tab to the real page, and immediately get lost. They call you back.
+- **In-person help** — You drive over, click three buttons, and say "see? it's easy." They nod. Next week they call again.
 
 The tools we have today are all passive:
 
 | Approach | What's wrong |
 |---|---|
+| **Phone instructions** | "Click the button in the top-right" — which button? Exhausting for both people. |
 | **Screen recordings** | The viewer watches, they don't do. Impossible to update — re-record the whole thing. |
 | **Screenshots with arrows** | Static. Break when UI updates. Can't show multi-step flows. |
-| **In-app tours (Intro.js, Shepherd)** | Require modifying the target app's codebase. Expensive to build and maintain. |
-| **Text guides / Notion docs** | "Click the button in the top-right corner" — which button? Context-switching hell. |
-| **Clicky (macOS)** | OS-level app, Mac-only, requires install and Accessibility permissions. Not embeddable. |
+| **In-app tours** | Require modifying the app's codebase. Your mom's bank isn't going to do that. |
+| **Third-party remote access** | Security risk. Overkill for "click the blue button." Requires installation on both sides. |
 
-**The core gap: there is no lightweight, programmable way to visually guide someone through a UI in real time without modifying the target application.**
+**The core gap: there is no lightweight, zero-install way to visually guide someone through a UI in real time — especially when the guide isn't in the same room.**
 
 ---
 
@@ -147,18 +152,20 @@ This is the complete end-to-end experience — every step works, no external dep
 
 ## Real Pain, Real Solution
 
-**This project exists because I've been the person who doesn't know where to click.**
+**This project exists because I've watched my own parents struggle with a screen and felt completely useless over the phone.**
 
-Every team I've been on uses Loom, Notion docs, and Slack messages to onboard new teammates. New hires watch a 15-minute Loom, alt-tab to the app, and immediately get stuck on step 3. They ping the author, wait for a reply, and lose 30 minutes of flow. I've been that new hire. I've been that author answering the same Slack question four times.
+My mom needed to upload a document to a government website. I sent her a screenshot with a red circle around "Upload." She said "I don't see it." I sent another screenshot. She said "mine looks different." Twenty minutes on the phone, three more screenshots, and she finally found it — but then the next screen asked for a file format she'd never heard of.
 
-VoicePoint bridges the gap between "watch a video" and "do it yourself" by *pointing at the actual UI while you perform the action*. The user doesn't watch a recording — they follow a live pointer on the real page, in real time, at their own pace. The pointer waits. It never gets frustrated. It never says "as you can see..." and clicks past something important.
+I've had that call. You've had that call. Every adult child has had that call.
 
-**The impact:** Any Chrome extension is zero-friction — install once, works on any page, no code changes to the target app. This means:
-- A SaaS company can create guided tours without embedding JavaScript into their product
-- A training team can build walkthroughs without recording a single video
-- A new hire can learn Salesforce, Notion, or Slack setup in 5 minutes instead of 45
-- An accessibility user can follow along as the pointer highlights the next interaction target
-- A QA engineer can record a sequence of pointer actions and replay them as a reproducible test
+VoicePoint bridges the gap between "I'll send you a screenshot" and "let me just do it for you" by *pointing at the actual UI while your loved one performs the action*. They don't watch a recording — they follow a live pointer on the real page, in real time, at their own pace. The pointer waits. It never gets frustrated. It never sighs and says "just click the button."
+
+**The impact:** A Chrome extension is zero-friction — your parent installs it once, it works on any page, no code changes needed. This means:
+- A daughter can create a "How to Facetime Grandma" walkthrough her mom can run anytime
+- A son can build a "File your taxes step by step" guide for his dad
+- A teacher can make a "Submit your assignment on the portal" flow for students
+- A caregiver can set up a "How to refill your prescription online" demo for an elderly patient
+- A grandparent can learn LinkedIn, Facebook, or online banking without calling for help every time
 
 ---
 

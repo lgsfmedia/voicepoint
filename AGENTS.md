@@ -4,7 +4,9 @@ This file is for AI coding agents (Claude Code, Cursor, etc.) to understand the 
 
 ## Overview
 
-VoicePoint is a Chrome extension that shows a virtual pointer (☝️) to demonstrate UI workflows. The MVP teaches users how to create a LinkedIn post.
+VoicePoint is a Chrome extension that shows a virtual pointer (☝️) to help parents, grandparents, and loved ones learn software. Instead of describing where to click over the phone or sending screenshots with red circles, a caregiver creates a walkthrough once, and their loved one runs it anytime — the ☝️ hand points at exactly what to do, right on the real page.
+
+The MVP demonstrates this by teaching how to create a LinkedIn post.
 
 ### Flow
 
@@ -12,7 +14,7 @@ VoicePoint is a Chrome extension that shows a virtual pointer (☝️) to demons
 2. Background sets `demoActive: true` in chrome.storage.session
 3. Background injects content.js + pointer.css into the active tab
 4. content.js creates the overlay and runs the correct step based on URL
-5. If not on LinkedIn → URL bar pointer step
+5. If not on LinkedIn → URL bar pointer step (type linkedin.com and press Enter)
 6. If on LinkedIn → find Create Post button, point at it, highlight it, show DONE
 7. On tab navigation, background re-injects content + sends demo-start message
 
@@ -57,7 +59,7 @@ button[data-trigger="share-box"]
 
 ### To add a new flow
 
-1. Add a new step function in content.js (e.g., `doSlackStep()`)
+1. Add a new step function in content.js (e.g., `doSlackStep()`, `doTaxFormStep()`)
 2. Add the flow detection in `startDemo()` based on hostname
 3. Add the step LED in popup.html
 4. Add the step message handler in popup.js
