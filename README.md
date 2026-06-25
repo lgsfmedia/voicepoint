@@ -1,86 +1,66 @@
 # VoicePoint ☝️
 
-**Every day, millions of people — parents, grandparents, kids, loved ones — stare at a screen and don't know where to click.** Your mom can't find the mute button on Zoom. Your grandfather gets lost filling out a form online. Your teenager doesn't know how to apply for their first job on LinkedIn. You try to help — you describe where to click, you send screenshots with red circles, you record a Loom — but they still get stuck on step 2 and call you again. The existing solutions (videos, screenshots, text guides) are all *passive*: they show, but they don't *guide*. VoicePoint solves this by placing a **live, autonomous virtual pointer** (a floating ☝️ hand) on top of any webpage that moves, clicks, and highlights in real time — like you standing behind them, pointing at exactly what to do, even when you're miles away. This is not another tutorial tool. This is a fundamental rethinking of how software teaches itself: a programmable, scriptable, AI-ready overlay that turns any UI flow into an interactive guided walkthrough without recording a single video or writing a single line of documentation.
+**Your mom just called again. She can't find the "Upload" button.**
+
+You've been here before. You describe where it is — "top right, blue, next to the search bar." She stares at the screen, moves the mouse in slow circles, and says "I don't see it." You send a screenshot with a red circle. She still doesn't see it — her browser zoom is different, or the UI updated last week, or she's on a different page entirely. Twenty minutes later, she finds it. Then the next screen asks for a file format she's never heard of, and she's stuck again.
+
+This isn't about impatience. It's about a fundamental gap in how software teaches itself. When you're in the same room, you can lean over and point. When you're on the phone, you have words — and words fail at spatial tasks on a screen.
+
+VoicePoint closes that gap. It places a **live, autonomous virtual pointer** (a floating ☝️ hand) on top of any webpage — it moves, clicks, and highlights in real time, like you standing behind your loved one and pointing at exactly what to do. There's no video to watch, no screenshots to compare. The hand is on the real page, pointing at the real button, waiting for them to click it.
 
 ---
 
 ## The Problem
 
-**Your loved ones are locked out of the digital world — and you can't be there to help.**
+**There is no good way to guide someone through a UI when you aren't in the same room.**
 
-Your dad needs to file his taxes online but can't find the "Upload Document" button. Your grandmother got a new iPhone and can't figure out how to Facetime you. Your younger cousin wants to apply for an internship on LinkedIn but the "Create a Post" button might as well be invisible. You've tried:
+Every method we have is either passive, fragile, or invasive:
 
-- **Phone calls** — "No, not that button. The blue one. No, *that* blue one. Look at the top right..."
-- **Screenshots with red circles** — They work once. Then the UI updates and they're useless.
-- **Screen recordings** — You record a 2-minute Loom. They watch it, alt-tab to the real page, and immediately get lost. They call you back.
-- **In-person help** — You drive over, click three buttons, and say "see? it's easy." They nod. Next week they call again.
+- **Phone calls** devolve into "no, the *other* blue button." Both people get frustrated. Learning doesn't stick.
+- **Screenshots with arrows** work exactly once. A UI update, a different screen resolution, a single A/B test — and the arrow points at the wrong place.
+- **Screen recordings** force the viewer to watch a video, then alt-tab to the real page, remember the steps, and execute them. Working memory is limited. They forget step 2 by the time they've finished step 3.
+- **In-app guided tours** require modifying the application's codebase. Your mom's bank, your dad's insurance portal, your grandmother's email provider — none of them will build custom tours for your family.
+- **Remote desktop tools** (TeamViewer, AnyDesk) are security risks and overkill for "click the blue button." They require installation, configuration, and trust on both sides.
 
-The tools we have today are all passive:
+None of these solve the real problem: **spatial guidance at a distance.** When you point at something in person, the other person's eyes follow your finger. They see exactly where to look. Every other channel — voice, text, video — adds a layer of indirection that loses information.
 
-| Approach | What's wrong |
-|---|---|
-| **Phone instructions** | "Click the button in the top-right" — which button? Exhausting for both people. |
-| **Screen recordings** | The viewer watches, they don't do. Impossible to update — re-record the whole thing. |
-| **Screenshots with arrows** | Static. Break when UI updates. Can't show multi-step flows. |
-| **In-app tours** | Require modifying the app's codebase. Your mom's bank isn't going to do that. |
-| **Third-party remote access** | Security risk. Overkill for "click the blue button." Requires installation on both sides. |
-
-**The core gap: there is no lightweight, zero-install way to visually guide someone through a UI in real time — especially when the guide isn't in the same room.**
+VoicePoint is the digital equivalent of pointing. It's a finger that reaches through the screen.
 
 ---
 
-## The Solution
+## What VoicePoint Does
 
-VoicePoint is a Chrome extension that places a **second cursor** on your screen — an autonomous ☝️ pointer that moves on its own, clicks with animation, and highlights elements. It runs in a transparent overlay that never blocks your real mouse or keyboard. The pointer can:
+VoicePoint is a Chrome extension that creates a **second cursor** — an autonomous ☝️ pointer that lives in a transparent overlay above the page. It never blocks mouse clicks or keyboard input (`pointer-events: none`). It doesn't record or stream anything. It just points.
 
-- Glide to any coordinate on the page with smooth CSS transitions
-- Perform a click animation (compress, overshoot, settle) with a ripple ring
+The pointer can:
+- Glide to any coordinate on the page with smooth, natural motion
+- Perform a click animation (press, overshoot, settle) with a visual ripple
 - Highlight any element with a pulsing blue glow
-- Show instructional tooltips that fade in and out
+- Display instructional tooltips that fade in and out
 - Survive page navigations — it follows the user from one page to the next
+- Wait — it polls for elements that haven't loaded yet, up to 25 seconds
 
 <p align="center">
-  <img src="screenshots/popup.png" alt="VoicePoint popup with Start Demo button" width="240">
+  <img src="screenshots/popup.png" alt="VoicePoint popup" width="240">
   &nbsp;&nbsp;
-  <img src="screenshots/urlbar-pointer.png" alt="☝️ pointing at the URL bar" width="600">
+  <img src="screenshots/urlbar-pointer.png" alt="☝️ pointing at URL bar" width="600">
 </p>
 
 ---
 
-## Why This is Different
+## How It's Built
 
-**The core idea is surprisingly simple yet entirely unexplored: a second cursor that isn't controlled by a mouse.**
+**The hard part isn't the pointer. It's making the pointer survive the browser's constraints.**
 
-VoicePoint is the first browser-native "sudo pointer." Instead of a person recording their screen, VoicePoint *programmatically performs* the demonstration — meaning it can be scripted, replayed, version-controlled, and eventually driven by an AI that reads the page and decides where to point.
+Chrome Manifest V3 eliminated persistent background pages. Service workers can be terminated after 30 seconds of inactivity. Content scripts declared in `manifest.json` only inject into tabs that load *after* the extension is installed — so if your parent already has a tab open, the extension can't see it. And when they navigate from one page to another, the old content script is destroyed with the old page.
 
-This inverts the traditional tutorial model:
+VoicePoint solves these problems with three mechanisms:
 
-- **Before:** A human does the work once, records it, and everyone watches the recording.
-- **After:** A script (or AI) describes the actions, and VoicePoint performs them live on the real page. Every time. Never out of date.
+**1. Programmatic injection.** When the user clicks "Start Demo," the service worker calls `chrome.scripting.executeScript()` and `chrome.scripting.insertCSS()` to inject the content script and styles into the active tab right now — regardless of whether the tab existed before the extension was loaded. This is more reliable than manifest-declared content scripts because it's on-demand and doesn't depend on page lifecycle.
 
-The architecture is AI-ready from day one: the service worker speaks a simple message protocol (`{ type: 'point-to', x, y, label }`), which means plugging in an LLM that observes the screen via screenshot and sends pointer commands is a matter of adding the API call — no restructuring needed.
+**2. Session-level state persistence.** `chrome.storage.session` stores `{ demoActive: true }`. This API was designed for MV3's ephemeral world: it survives page navigations (so the next page knows the demo is active) but clears when the browser closes (so there's no stale state). When the service worker detects a tab navigation via `chrome.tabs.onUpdated`, it re-injects the content script, which reads `demoActive` from storage and resumes the demo.
 
----
-
-## How It Works
-
-**The engineering challenge:** Chrome Manifest V3 eliminated persistent background pages. Content scripts declared in the manifest only inject into pages loaded *after* extension installation — meaning already-open tabs are invisible to the extension. And yet the pointer must survive the user navigating from one page to another.
-
-**The solution is a three-part state machine:**
-
-```
-inactive → [Start Demo] → url_bar_step
-                                ↓ (user types linkedin.com, navigates)
-                          linkedin_step
-                                ↓ (button found, pointed at)
-                          done → cleanup → inactive
-```
-
-1. **Programmatic injection** — The service worker uses `chrome.scripting.executeScript()` + `insertCSS()` to inject the content script and styles into the active tab on demand. A `chrome.tabs.onUpdated` listener re-injects on every navigation while the demo is active. This is more reliable than manifest-declared content scripts because it works on tabs that existed before the extension was loaded.
-
-2. **State persistence** — `chrome.storage.session` stores `{ demoActive: true }`. This API was designed for MV3's ephemeral service worker lifecycle: it survives page navigations but clears on browser close, making it ideal for session-scoped state.
-
-3. **Element detection with resilience** — LinkedIn's React-based feed loads progressively. The "Create Post" button can appear 5-15 seconds after the page loads, and LinkedIn A/B tests different layouts with different CSS selectors. VoicePoint polls every 500ms for up to 25 seconds using 8 fallback selectors:
+**3. Resilient element detection.** LinkedIn's feed is a React single-page application. It loads progressively, A/B tests different layouts, and changes CSS selectors without notice. The "Create Post" button might appear 2 seconds after the page loads or 15 seconds later. VoicePoint polls every 500ms for up to 25 seconds using 8 different selectors in priority order:
 
 ```js
 const SELECTORS = [
@@ -95,183 +75,156 @@ const SELECTORS = [
 // Fallback: text-match any <button> or <div role="button">
 ```
 
-4. **Pointer positioning** — The ☝️ emoji (U+261D) points upward. The fingertip is at the top edge, horizontally centered. To point at an element:
+If none of the selectors match, it falls back to iterating every `<button>` and `<div role="button">` on the page, matching by text content. This catches layouts that have never been seen before.
 
-```js
-const btnX = rect.left + rect.width / 2 - POINTER_SIZE / 2; // 20
-const btnY = rect.top - 8; // fingertip just above the element
+**The state machine that ties it together:**
+
+```
+inactive → [Start Demo] → url_bar_step
+                                ↓ (user types linkedin.com, navigates)
+                          linkedin_step
+                                ↓ (button found)
+                          done → cleanup → inactive
 ```
 
-An 8px blue target dot follows the fingertip with the same CSS transition, eliminating ambiguity caused by emoji rendering differences across platforms.
+**Pointer positioning requires precision.** The ☝️ emoji (U+261D) points upward. Its fingertip is at the top edge, roughly centered horizontally. To point at an element, the fingertip must land exactly at the element's top-center:
 
-5. **Scroll-aware timing** — After `button.scrollIntoView({ behavior: 'smooth' })`, VoicePoint waits for the `scrollend` event (with a 1200ms timeout fallback) before reading `getBoundingClientRect()`. This guarantees the position is measured after the scroll animation finishes.
+```js
+const pointerLeft = rect.left + rect.width / 2 - 20;  // center the 40px emoji
+const pointerTop  = rect.top - 8;                      // fingertip just above the element
+```
+
+An 8px blue target dot follows the fingertip with the same CSS transition. This eliminates the ambiguity of emoji rendering — the dot's center is the exact pixel being pointed at.
+
+**Scroll timing is non-trivial.** `scrollIntoView({ behavior: 'smooth' })` triggers an animated scroll that doesn't block JavaScript. The position must be measured *after* the scroll finishes, not before. VoicePoint listens for the `scrollend` event with a 1200ms timeout fallback — whichever comes first.
 
 ---
 
-## The Demo Flow
+## The Demo: Teaching LinkedIn in 10 Seconds
 
-This is the complete end-to-end experience — every step works, no external dependencies, no API keys:
+This is the complete end-to-end flow. No external dependencies, no API keys, no server:
 
 <p align="center">
   <img src="screenshots/popup.png" alt="Popup" width="240">
   &nbsp;&nbsp;
-  <img src="screenshots/urlbar-pointer.png" alt="URL bar pointer" width="600">
+  <img src="screenshots/urlbar-pointer.png" alt="URL bar" width="600">
 </p>
 
-1. **Click "Start Demo"** in the popup → the service worker sets `demoActive: true` and injects the overlay into the active tab.
+1. Click **Start Demo** in the popup. The service worker sets `demoActive: true` and injects the overlay.
 
-2. **☝️ hand appears** at screen center with a scale-in animation (`0 → 1.2 → 1`), then glides to `(50vw, 8px)` — the URL bar area — using a `cubic-bezier(0.22, 1, 0.36, 1)` transition that overshoots then settles, mimicking a human hand gesture.
+2. The ☝️ hand appears at screen center with a scale-in animation, then glides to the top of the page — where the URL bar lives. The motion uses `cubic-bezier(0.22, 1, 0.36, 1)` — an ease-out curve with a slight overshoot that mimics a human hand arriving at a target.
 
-3. **Click animation plays:** the hand compresses to 85% scale, shifts down 4px (the "press"), then overshoots to 110% before settling. A blue ripple ring expands from the click point.
+3. A click animation plays: the hand compresses to 85% scale (the "press"), shifts down 4px, then rebounds to 110% before settling. A blue ripple ring expands from the click point. The entire animation takes 350ms — fast enough to feel responsive, slow enough to register visually.
 
 <p align="center">
   <img src="screenshots/tooltip.png" alt="Tooltip" width="600">
 </p>
 
-4. **Tooltip appears:** *"Click the address bar above, type linkedin.com and press Enter"* — a dark translucent card with a blue accent border, readable on any background.
+4. A tooltip appears: *"Click the address bar above, type linkedin.com and press Enter"* — a dark card with a blue accent, readable on any background, positioned near the pointer.
 
-5. **User navigates to LinkedIn** — the service worker detects the URL change via `chrome.tabs.onUpdated`, re-injects the content script, which reads `demoActive: true` from storage and starts the LinkedIn step.
+5. The user types `linkedin.com` and presses Enter. The page navigates. The service worker detects the URL change and re-injects the content script, which reads `demoActive: true` and starts the LinkedIn step.
 
-6. **Retry loop activates** — polls for the "Create Post" button every 500ms. Meanwhile, a "Looking for the Create Post button..." tooltip keeps the user informed.
+6. A retry loop begins polling for the "Create Post" button. Meanwhile, a "Looking for the Create Post button..." tooltip keeps the user informed. The loop runs every 500ms for up to 25 seconds.
 
-7. **Button found** — VoicePoint scrolls it into view, waits for scroll completion, calculates its position, and glides the ☝️ hand to the button's top-center.
+7. The button is found. VoicePoint scrolls it into view, waits for the scroll to finish, calculates its exact position, and glides the ☝️ hand to the button's top-center.
 
 <p align="center">
-  <img src="screenshots/linkedin-done.png" alt="Done" width="600">
+  <img src="screenshots/linkedin-done.png" alt="Done overlay" width="600">
 </p>
 
-8. **Button is highlighted** with a pulsing blue glow (`box-shadow` cycling between 0px and 6px spread every 1.5s) and a border ring via `::after` pseudo-element.
+8. The button is highlighted with a pulsing blue glow — `box-shadow` cycles from 0px to 6px spread every 1.5 seconds. A border ring appears via `::after` pseudo-element.
 
-9. **✓ DONE overlay** fades in over a semi-transparent backdrop — "✓ DONE" scales up with a bounce ease (`cubic-bezier(0.34, 1.56, 0.64, 1)`), and a subtitle reads *"LinkedIn post creation ready"*.
+9. **✓ DONE** fades in over a semi-transparent backdrop. The text scales up with a bounce ease. A subtitle reads *"LinkedIn post creation ready."*
 
-10. **Auto-cleanup** after 5 seconds — `demoActive` reset to `false`, overlay removed, popup returns to "Ready".
-
-**That's it. No video. No screenshots (except this README). A 10-second interactive experience replaces a 30-second screen recording and communicates the action with zero ambiguity.**
+10. After 5 seconds, the overlay is removed and state resets. The extension returns to "Ready."
 
 ---
 
-## Real Pain, Real Solution
+## Why This Approach Works
 
-**This project exists because I've watched my own parents struggle with a screen and felt completely useless over the phone.**
+**A Chrome extension is the right medium for this problem.** It requires no installation on the target's computer beyond what they already have (Chrome). It requires no modification of the target website. It works on any page, on any operating system, for anyone who can install a browser extension.
 
-My mom needed to upload a document to a government website. I sent her a screenshot with a red circle around "Upload." She said "I don't see it." I sent another screenshot. She said "mine looks different." Twenty minutes on the phone, three more screenshots, and she finally found it — but then the next screen asked for a file format she'd never heard of.
+**The pointer is not a recording.** A video shows you what happened. The pointer shows you what to do — right now, on the real page, with the real UI. If the UI changes, the pointer still points at the right place (as long as the script is updated). There's no lag, no confusion between "what's in the video" and "what's on my screen."
 
-I've had that call. You've had that call. Every adult child has had that call.
-
-VoicePoint bridges the gap between "I'll send you a screenshot" and "let me just do it for you" by *pointing at the actual UI while your loved one performs the action*. They don't watch a recording — they follow a live pointer on the real page, in real time, at their own pace. The pointer waits. It never gets frustrated. It never sighs and says "just click the button."
-
-**The impact:** A Chrome extension is zero-friction — your parent installs it once, it works on any page, no code changes needed. This means:
-- A daughter can create a "How to Facetime Grandma" walkthrough her mom can run anytime
-- A son can build a "File your taxes step by step" guide for his dad
-- A teacher can make a "Submit your assignment on the portal" flow for students
-- A caregiver can set up a "How to refill your prescription online" demo for an elderly patient
-- A grandparent can learn LinkedIn, Facebook, or online banking without calling for help every time
+**The architecture is designed for AI.** The service worker already accepts a simple message protocol: `{ type: 'point-to', x, y, label }`. Plugging in an LLM that observes the screen and decides where to point requires adding the API call — the infrastructure is already in place. The current demo uses hardcoded coordinates and selectors, but the same message bus can carry AI-generated commands.
 
 ---
 
-## Design & Experience
+## Design Details
 
-Every visual decision was made with a specific goal: **the pointer must feel human, not robotic.**
+Every visual decision has a reason:
 
 | Element | Why |
 |---|---|
-| **☝️ hand emoji** | Universally recognized, cross-platform, inherently friendly — feels like a person pointing, not a machine cursor. |
-| **Blue target dot (8px, `#4A90D9`)** | Eliminates ambiguity from emoji rendering differences. White border + box-shadow glow makes it visible on any background. |
-| **`cubic-bezier(0.22, 1, 0.36, 1)` transitions** | Ease-out with overshoot — the pointer arrives quickly and settles naturally, mimicking a hand gesture. |
-| **Dark tooltip card** | `rgba(26, 26, 46, 0.95)` with blue accent border — readable on light or dark pages. Slide-up entrance animation. |
-| **Green ✅ DONE (72px, `#2ecc71`)** | Large, celebratory, unambiguous. Bounce-in entrance with semi-transparent backdrop. |
-| **Ripple effect** | Circular ring expands from click point — haptic-like visual feedback. |
-| **Pulsing highlight** | `box-shadow` cycles 0→6px spread — attention-grabbing without being distracting. |
-| **`pointer-events: none`** | The overlay never blocks clicks, typing, scrolling, or any user interaction. Ever. |
+| **☝️ hand** | Universally recognized, cross-platform, friendly. A synthetic cursor icon feels like a machine. A hand feels like a person. |
+| **Blue target dot (8px, `#4A90D9`, white border)** | Emoji rendering varies across platforms. The dot's exact center is the unambiguous target. |
+| **`cubic-bezier(0.22, 1, 0.36, 1)` transitions** | The pointer arrives quickly, overshoots slightly, and settles — the same motion profile as a human hand pointing. Linear motion feels robotic. |
+| **Dark tooltip (`rgba(26, 26, 46, 0.95)`)** | Readable on light *or* dark backgrounds. Slide-up entrance with fade-in draws attention without jarring. |
+| **Green ✓ DONE (72px, `#2ecc71`)** | Large, celebratory, unambiguous. The bounce-in animation signals completion with positive reinforcement. |
+| **Ripple ring on click** | Haptic-like visual feedback. The ring expanding from the click point tells the user "something happened here." |
+| **`pointer-events: none`** | The overlay never intercepts clicks, typing, scrolling, or any interaction. It's a pointer, not a wall. |
 
 ---
 
-## What We Learned
+## What This Becomes
 
-This project stretched us into unfamiliar territory across three dimensions:
+The MVP demonstrates the core loop: a 2-step, hardcoded walkthrough for LinkedIn. The next iteration is a **recording mode**: the caregiver performs the actions once while the extension records the pointer positions, and the loved one replays the recording anytime.
 
-**1. Chrome Extension Manifest V3** — MV3's service worker lifecycle is significantly more restrictive than MV2's background pages. The service worker can be terminated after 30 seconds of inactivity, meaning timeouts and promise chains must be carefully managed. We learned to rely on `chrome.storage.session` (a MV3-only API) for state persistence and `chrome.scripting.executeScript()` for reliable content injection. The transition from `background.html` (MV2) to a service worker (MV3) requires a fundamentally different mental model — you can't assume your process lives forever.
+After that, the natural evolution is **AI-driven guidance**: an LLM with vision takes a screenshot of the page, decides the next action, and sends a pointer command. The caregiver never needs to record anything — they just describe the task, and the AI builds the walkthrough.
 
-**2. CSS animation timing for perceived naturalness** — Getting the ☝️ hand to feel *human* required deep work with cubic-bezier curves. The difference between a robotic pointer and a natural one is ~200ms and the right easing. We tuned the click animation's compression phase (0→40%, scale 1→0.85, translateY 0→4px) to match the slight spring of a real finger pressing a button, and the overshoot phase (70%, scale 1.1) to mimic the micro-correction of a hand aiming at a target.
-
-**3. DOM resilience against dynamic SPAs** — LinkedIn's React-based feed is a worst-case scenario for content scripts. It loads progressively, A/B tests different layouts, and changes selectors without notice. Building the retry loop with 8 fallback selectors and a 25-second timeout taught us that *"find the element"* is the hardest problem in browser automation. We also learned that `scrollIntoView` with `{ behavior: 'smooth' }` doesn't block — you must listen for the `scrollend` event or use a generous timeout before measuring coordinates.
-
-**What's next:** VoicePoint's architecture is designed for an AI agent where an LLM (Claude, GPT) observes the screen via screenshot, decides the next action, and sends `[POINT: x, y, label]` commands to the pointer. The message protocol is already in place — the background accepts `{ type: 'point-to', x, y, label }` and the pointer moves. The next step is adding the vision loop (screenshot → LLM → pointer command) with a bring-your-own-key model.
+The long-term vision is a platform where any software task can be turned into an interactive, pointer-guided walkthrough with zero effort — for parents learning Facebook, for grandparents navigating healthcare portals, for anyone who's ever been on the phone saying "no, the other blue button."
 
 ---
 
-## Architecture
-
-```
-┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  popup.html │────▶│  background.js   │────▶│  content.js     │
-│  popup.js   │     │  (service worker)│     │  (injected)     │
-└─────────────┘     └──────────────────┘     └─────────────────┘
-                           │                          │
-                           ▼                          ▼
-                    chrome.storage              pointer.css
-                    .session                   (injected CSS)
-                    { demoActive }
-```
-
-The extension uses:
-- **Manifest V3** with `scripting` + `activeTab` permissions
-- `chrome.scripting.executeScript` / `insertCSS` for programmatic injection
-- `chrome.storage.session` for state across page navigations
-- `chrome.tabs.onUpdated` for re-injection after navigation
-
----
-
-## Directory structure
+## Directory Structure
 
 ```
 voicepoint/
 ├── manifest.json         # Chrome extension manifest (MV3)
-├── background.js         # Service worker — state management, injection, tab tracking
-├── content.js            # Injected script — pointer creation, animation, step logic
-├── pointer.css           # All styles: pointer, tooltip, highlight, DONE overlay, ripple
+├── background.js         # Service worker — state machine, injection, tab tracking
+├── content.js            # Injected script — pointer overlay, animation, step logic
+├── pointer.css           # All visual styles
 ├── popup.html            # Extension popup UI
-├── popup.js              # Popup logic — start/stop buttons, step indicators
-├── screenshots/          # Demo screenshots for the README
+├── popup.js              # Popup event handlers
+├── screenshots/
 │   ├── popup.png
 │   ├── urlbar-pointer.png
 │   ├── tooltip.png
 │   └── linkedin-done.png
-├── AGENTS.md             # AI agent prompt / architecture reference
+├── AGENTS.md             # AI agent reference
 ├── .cursorrules          # Cursor IDE configuration
 └── README.md
 ```
 
 ---
 
-## Development
+## Getting Started
 
 ### Load the extension
 
-1.  Open `chrome://extensions/`
-2.  Toggle **Developer mode** ON
-3.  Click **Load unpacked** → select the `sudo-pointer-extension/` directory
+1. Open `chrome://extensions/`
+2. Enable **Developer mode**
+3. Click **Load unpacked** → select the `sudo-pointer-extension/` directory
 
-### How to test
+### Run the demo
 
-1.  Open any page (e.g. `google.com`)
-2.  Click the VoicePoint icon in the Chrome toolbar → **Start Demo**
-3.  Watch the ☝️ pointer appear and point at the URL bar
-4.  Type `linkedin.com` in the URL bar and press Enter
-5.  On LinkedIn, the pointer moves to the "Create a Post" button, highlights it, and shows **✓ DONE**
+1. Open any page (e.g. `google.com`)
+2. Click the VoicePoint icon in the toolbar → **Start Demo**
+3. The ☝️ hand appears and points at the URL bar
+4. Type `linkedin.com` and press Enter
+5. On LinkedIn, the pointer moves to "Create a Post," highlights it, and shows **✓ DONE**
 
 ---
 
 ## Roadmap
 
-| Phase | Feature | Status |
-|---|---|---|
-| **MVP** | ☝️ Sudo pointer with 2‑step LinkedIn demo | ✅ Complete |
-| **Phase 2** | Record & replay — capture pointer positions and actions | 🔜 Next |
-| **Phase 3** | Voice commands — "Point at the profile menu" | 🔜 Next |
-| **Phase 4** | AI agent integration (LLM reads screen → moves pointer) | 🌐 Future |
-| **Phase 5** | Multi‑step script engine — define flows in JSON | 🌐 Future |
-| **Phase 6** | Cross‑browser (Firefox, Edge, Safari) | 🌐 Future |
+| Phase | What it unlocks |
+|---|---|
+| **MVP** | ☝️ Hardcoded 2-step demo (LinkedIn) |
+| **Record mode** | Caregiver performs actions once → loved one replays anytime |
+| **Script engine** | Define walkthroughs as JSON: `[{url, selector, action, tooltip}, ...]` |
+| **AI integration** | LLM observes screen → sends pointer commands. Bring your own key. |
+| **Cross-browser** | Firefox, Edge, Safari |
 
 ---
 
@@ -281,4 +234,4 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-*VoicePoint is inspired by Farza's [Clicky](https://github.com/farzaa/clicky) — an AI teacher that lives next to your cursor. This is a browser‑native take on the same idea: a lightweight, scriptable pointer overlay that helps people learn software by doing. No installation. No video. Just a hand that points.*
+*Inspired by Farza's [Clicky](https://github.com/farzaa/clicky) — an AI teacher that lives next to your cursor. VoicePoint is a browser-native take on the same idea: a lightweight, scriptable pointer overlay that helps people learn software by doing. No installation. No video. Just a hand that points.*
