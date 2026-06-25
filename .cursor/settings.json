@@ -1,0 +1,7 @@
+{
+  "cursorRules": ".cursorrules",
+  "agent.knowledgeFiles": ["AGENTS.md"],
+  "agent.enabled": true,
+  "git.enabled": true,
+  "extensions": []
+}
