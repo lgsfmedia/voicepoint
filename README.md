@@ -28,11 +28,26 @@ VoicePoint turns any UI flow into a **live, pointed‑at demonstration** — a v
 
 The MVP (this repo) demonstrates the core mechanic:
 
+<p align="center">
+  <img src="screenshots/popup.png" alt="VoicePoint popup with Start Demo button" width="240">
+  &nbsp;&nbsp;
+  <img src="screenshots/urlbar-pointer.png" alt="☝️ pointing at the URL bar" width="600">
+</p>
+
 1.  Click **Start Demo** in the extension popup.
 2.  A ☝️ hand appears and points at the URL bar with a click animation.
 3.  A tooltip reads: *"Type linkedin.com and press Enter."*
+
+<p align="center">
+  <img src="screenshots/tooltip.png" alt="Tooltip instructing user to type linkedin.com" width="600">
+</p>
+
 4.  The user follows the instruction — VoicePoint detects the navigation.
 5.  On LinkedIn, the ☝️ hand glides to the **"Create a Post"** button, highlights it with a pulsing glow, and shows **✓ DONE**.
+
+<p align="center">
+  <img src="screenshots/linkedin-done.png" alt="☝️ pointer highlighting the Create Post button with DONE overlay" width="600">
+</p>
 
 No video. No narration. Just a clear, visual pointer saying *"do this, then this, then you're done."*
 
@@ -87,6 +102,11 @@ voicepoint/
 ├── pointer.css           # All styles: pointer, tooltip, highlight, DONE overlay, ripple
 ├── popup.html            # Extension popup UI
 ├── popup.js              # Popup logic — start/stop buttons, step indicators
+├── screenshots/          # Demo screenshots for the README
+│   ├── popup.png
+│   ├── urlbar-pointer.png
+│   ├── tooltip.png
+│   └── linkedin-done.png
 ├── AGENTS.md             # AI agent prompt / architecture reference
 ├── .cursorrules          # Cursor IDE configuration
 └── README.md
