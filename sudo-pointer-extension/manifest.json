@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Sudo Pointer",
+  "version": "1.0.0",
+  "description": "A virtual pointer overlay to demonstrate UI actions",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Sudo Pointer"
+  }
+}
