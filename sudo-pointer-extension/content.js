@@ -1,12 +1,14 @@
-if (window.__sudoPointerLoaded) { /* already running */ }
+if (window.__sudoPointerLoaded) return;
 window.__sudoPointerLoaded = true;
 
 console.log('Sudo Pointer: content script loaded');
 
 let isActive = false;
-let overlay, pointer, tooltip, doneOverlay;
+let overlay, pointer, targetDot, tooltip, doneOverlay;
 let pointerX = -100, pointerY = -100;
 let currentHighlight = null;
+
+const POINTER_SIZE = 40;
 
 function createOverlay() {
   if (overlay) return;
@@ -14,6 +16,10 @@ function createOverlay() {
   overlay = document.createElement('div');
   overlay.className = 'sudo-pointer-overlay';
   document.documentElement.appendChild(overlay);
+
+  targetDot = document.createElement('div');
+  targetDot.className = 'sudo-target-dot';
+  document.documentElement.appendChild(targetDot);
 
   pointer = document.createElement('div');
   pointer.className = 'sudo-pointer';
@@ -31,13 +37,12 @@ function createOverlay() {
     <div class="sudo-done-sub">LinkedIn post creation ready</div>
   `;
   document.documentElement.appendChild(doneOverlay);
-
-  console.log('Sudo Pointer: overlay created');
 }
 
 function removeOverlay() {
   if (overlay) { overlay.remove(); overlay = null; }
   if (pointer) { pointer.remove(); pointer = null; }
+  if (targetDot) { targetDot.remove(); targetDot = null; }
   if (tooltip) { tooltip.remove(); tooltip = null; }
   if (doneOverlay) { doneOverlay.remove(); doneOverlay = null; }
   removeHighlight();
@@ -48,20 +53,22 @@ function movePointerTo(x, y) {
   pointerY = y;
   pointer.style.left = x + 'px';
   pointer.style.top = y + 'px';
+  targetDot.style.left = (x + POINTER_SIZE / 2 - 4) + 'px';
+  targetDot.style.top = (y - 4) + 'px';
 }
 
 function getPointerRect() {
-  return { x: pointerX - 10, y: pointerY - 10, w: 40, h: 40 };
+  return { x: pointerX - 10, y: pointerY - 10, w: POINTER_SIZE, h: POINTER_SIZE };
 }
 
 function showTooltip(text, belowPointer) {
   tooltip.innerHTML = text;
   tooltip.classList.add('visible');
   const pr = getPointerRect();
-  const tipX = pr.x - 60;
-  const tipY = belowPointer ? pr.y + pr.h + 16 : pr.y - 70;
+  const tipX = belowPointer ? pr.x : pointerX + POINTER_SIZE / 2 - 150;
+  const tipY = belowPointer ? pr.y + pr.h + 16 : pointerY - 75;
   tooltip.style.left = Math.max(10, Math.min(tipX, window.innerWidth - 330)) + 'px';
-  tooltip.style.top = tipY + 'px';
+  tooltip.style.top = Math.max(10, tipY) + 'px';
 }
 
 function hideTooltip() {
@@ -82,9 +89,11 @@ function clickAnimation() {
   pointer.classList.remove('click-anim');
   void pointer.offsetWidth;
   pointer.classList.add('click-anim');
+  targetDot.classList.add('click-dot');
+  setTimeout(() => targetDot.classList.remove('click-dot'), 350);
   const ripple = document.createElement('div');
   ripple.className = 'sudo-ripple';
-  ripple.style.left = (pointerX - 20) + 'px';
+  ripple.style.left = (pointerX + POINTER_SIZE / 2 - 20) + 'px';
   ripple.style.top = (pointerY - 20) + 'px';
   document.documentElement.appendChild(ripple);
   setTimeout(() => ripple.remove(), 700);
@@ -104,87 +113,108 @@ function highlightElement(el) {
   el.classList.add('sudo-highlight');
 }
 
-const LINKEDIN_SELECTORS = [
-  'button[aria-label="Create a post"]',
-  'button[aria-label="Start a post"]',
-  '.share-box-feed-entry__trigger',
-  '[data-control-name="create_post"]',
-  '.share-creation-state__trigger',
-];
-
-function findCreatePostButton() {
-  for (const sel of LINKEDIN_SELECTORS) {
-    const el = document.querySelector(sel);
-    if (el) return el;
-  }
-  const buttons = document.querySelectorAll('button');
-  for (const btn of buttons) {
-    const text = (btn.textContent || '').toLowerCase().trim();
-    if (text.includes('start a post') || text.includes('create a post')) return btn;
-  }
-  const divs = document.querySelectorAll('div[role="button"]');
-  for (const div of divs) {
-    const text = (div.textContent || '').toLowerCase().trim();
-    if (text.includes('start a post') || text.includes('create a post')) return div;
-  }
-  return null;
+function waitForEl(selector, textMatch, timeout = 20000) {
+  const check = () => {
+    for (const sel of selector) {
+      const el = document.querySelector(sel);
+      if (el) return el;
+    }
+    const all = document.querySelectorAll(textMatch);
+    for (const el of all) {
+      const t = (el.textContent || '').toLowerCase().trim();
+      if (t.includes('start a post') || t.includes('create a post')) return el;
+    }
+    return null;
+  };
+  return new Promise(resolve => {
+    const found = check();
+    if (found) return resolve(found);
+    let waited = 0;
+    const iv = setInterval(() => {
+      waited += 500;
+      const f = check();
+      if (f) { clearInterval(iv); resolve(f); }
+      else if (waited >= timeout) { clearInterval(iv); resolve(null); }
+    }, 500);
+  });
 }
 
 function doUrlBarStep() {
   if (!isActive) return;
+  const cx = window.innerWidth / 2 - POINTER_SIZE / 2;
+  const cy = window.innerHeight / 2;
   pointer.style.transition = 'none';
-  movePointerTo(window.innerWidth / 2 - 20, window.innerHeight / 2 - 20);
+  movePointerTo(-100, -100);
   void pointer.offsetHeight;
+  movePointerTo(cx, cy);
   pointer.classList.add('arrive-anim');
   setTimeout(() => pointer.classList.remove('arrive-anim'), 500);
   pointer.style.transition = '';
-  const targetX = window.innerWidth / 2 - 20;
-  const targetY = 12;
   setTimeout(() => {
+    const targetX = window.innerWidth / 2 - POINTER_SIZE / 2;
+    const targetY = 8;
     movePointerTo(targetX, targetY);
     setTimeout(() => {
       clickAnimation();
       showTooltip('Click the address bar above, type <code>linkedin.com</code> and press <b>Enter</b>', true);
-      setTimeout(hideTooltip, 7000);
+      setTimeout(hideTooltip, 8000);
     }, 800);
-  }, 600);
-  try {
-    chrome.runtime.sendMessage({ type: 'step-urlbar' });
-  } catch (e) {}
+  }, 700);
+  try { chrome.runtime.sendMessage({ type: 'step-urlbar' }); } catch (e) {}
 }
 
 async function doLinkedInStep() {
   if (!isActive) return;
-  try {
-    chrome.runtime.sendMessage({ type: 'step-linkedin' });
-  } catch (e) {}
+  try { chrome.runtime.sendMessage({ type: 'step-linkedin' }); } catch (e) {}
+
+  const cx = window.innerWidth / 2 - POINTER_SIZE / 2;
+  const cy = window.innerHeight / 2;
   pointer.style.transition = 'none';
-  movePointerTo(window.innerWidth / 2 - 20, window.innerHeight / 2 - 20);
+  movePointerTo(-100, -100);
   void pointer.offsetHeight;
+  movePointerTo(cx, cy);
   pointer.style.transition = '';
-  let button = findCreatePostButton();
+
+  const LINKEDIN_SELECTORS = [
+    'button[aria-label="Create a post"]',
+    'button[aria-label="Start a post"]',
+    '.share-box-feed-entry__trigger',
+    '[data-control-name="create_post"]',
+    '.share-creation-state__trigger',
+    '.feed-shared-controls__trigger',
+    'button[data-trigger="share-box"]',
+  ];
+
+  showTooltip('Looking for the "Create Post" button on LinkedIn...', true);
+
+  const button = await waitForEl(LINKEDIN_SELECTORS, 'button, div[role="button"]', 25000);
+  hideTooltip();
+
   if (!button) {
-    for (let i = 0; i < 10; i++) {
-      await new Promise(r => setTimeout(r, 1000));
-      button = findCreatePostButton();
-      if (button) break;
-    }
-  }
-  if (!button) {
-    showTooltip('Could not find the "Create Post" button on LinkedIn.', true);
-    setTimeout(hideTooltip, 4000);
+    showTooltip('Could not find "Create Post" — navigate to your LinkedIn feed page.', true);
+    setTimeout(hideTooltip, 5000);
     return;
   }
+
   button.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  await new Promise(r => setTimeout(r, 800));
+
+  await new Promise(r => {
+    let done = false;
+    const onEnd = () => { if (!done) { done = true; r(); } };
+    setTimeout(onEnd, 1200);
+    button.addEventListener('scrollend', onEnd, { once: true });
+  });
+
   const rect = button.getBoundingClientRect();
-  const btnX = rect.left + rect.width / 2 - 10;
-  const btnY = rect.top + 10;
+  const btnX = rect.left + rect.width / 2 - POINTER_SIZE / 2;
+  const btnY = rect.top - 8;
+
   movePointerTo(btnX, btnY);
-  await new Promise(r => setTimeout(r, 600));
+  await new Promise(r => setTimeout(r, 700));
   clickAnimation();
   highlightElement(button);
-  showTooltip('☝️ Click here to <b>Create a Post</b> on LinkedIn!', false);
+  showTooltip('☝️ Click <b>Create a Post</b> to start a LinkedIn post!', false);
+
   setTimeout(() => {
     hideTooltip();
     showDone();
@@ -194,7 +224,7 @@ async function doLinkedInStep() {
       removeOverlay();
       try { chrome.runtime.sendMessage({ type: 'demo-ended' }); } catch (e) {}
     }, 5000);
-  }, 2500);
+  }, 3000);
 }
 
 function startDemo() {
@@ -217,18 +247,12 @@ function stopDemo() {
   setTimeout(removeOverlay, 300);
 }
 
-// Listen for messages from background
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('Sudo Pointer: got message', message.type);
   if (message.type === 'demo-start') startDemo();
   if (message.type === 'demo-stop') stopDemo();
   if (message.type === 'ping') sendResponse({ alive: true });
 });
 
-// Check if demo was already active (e.g., after navigation)
 chrome.storage.session.get(['demoActive'], ({ demoActive }) => {
-  if (demoActive) {
-    console.log('Sudo Pointer: demo was active, resuming');
-    startDemo();
-  }
+  if (demoActive) startDemo();
 });
