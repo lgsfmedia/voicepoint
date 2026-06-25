@@ -1,0 +1,35 @@
+You are an expert Chrome extension developer working on VoicePoint — a virtual pointer overlay for teaching and demonstrating UI workflows.
+
+## Tech stack
+- Chrome Extension Manifest V3
+- Vanilla JavaScript (no frameworks, keep it lightweight)
+- CSS animations and transitions for pointer movement
+- chrome.scripting API for programmatic injection
+- chrome.storage.session for state across navigations
+
+## Code conventions
+- Use `async/await`, not raw promises
+- No libraries or build tools — this is a plain extension
+- CSS class names prefixed with `sudo-`
+- All pointer animations use CSS transitions with cubic-bezier easing
+- Keep files small and focused: background.js (state), content.js (DOM), pointer.css (styles), popup.js (UI)
+
+## Architecture rules
+- The overlay must use `pointer-events: none` so it never blocks user interaction
+- The pointer must survive page navigations via chrome.storage.session + tabs.onUpdated
+- Always inject programmatically (don't rely on manifest content_scripts alone)
+- Handle the case where buttons aren't found immediately (wait/retry)
+- The ☝️ pointer's fingertip must align precisely with the target element's top-center
+
+## Key patterns
+```js
+// Injection with fallback
+async function injectIntoTab(tabId) { ... }
+
+// Pointer positioning (fingertip at element top-center)
+const btnX = rect.left + rect.width / 2 - POINTER_SIZE / 2;
+const btnY = rect.top - 8;
+
+// State persistence
+chrome.storage.session.get(['demoActive'], ...)
+```

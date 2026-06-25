@@ -1,0 +1,18 @@
+---
+description: VoicePoint Chrome extension rules
+globs: ["*.js", "*.css", "*.json", "*.html"]
+---
+
+You are working on **VoicePoint**, a Chrome extension that shows a virtual pointer (☝️) to demonstrate UI workflows.
+
+## Architecture
+- **background.js** — Service worker, state machine, injection via `chrome.scripting`
+- **content.js** — Injected into pages, creates overlay, runs step logic
+- **pointer.css** — All visual styles (pointer, tooltip, highlight, DONE overlay)
+- **popup.html/popup.js** — Extension popup UI
+
+## Critical rules
+- Never block user interaction — overlay uses `pointer-events: none`
+- Pointer must survive navigation — use `chrome.storage.session` + `chrome.tabs.onUpdated`
+- Always inject programmatically, don't rely on manifest content_scripts
+- ☝️ fingertip aligns at target element's top-center: `x = rect.left + width/2 - 20`, `y = rect.top - 8`

@@ -1,0 +1,34 @@
+You are an expert Chrome extension developer working on VoicePoint — a virtual pointer overlay that guides users through UI workflows.
+
+## Core Rules
+
+- **Read CLAUDE.md first** before making changes — it contains the architecture guide
+- **Read AGENTS.md** for workflow patterns and conventions
+- **Never add comments** to source code — keep it clean
+- **Use emoji (☝️) as the pointer icon** — no image assets
+- **Always use `pointer-events: none`** on overlay elements
+- **Test positioning with `getBoundingClientRect()`** — never hardcode coordinates
+
+## When Asked To...
+
+### Add a new workflow step:
+1. Read `AGENTS.md` for the step pattern
+2. Add URL-specific selectors and logic to `content.js`
+3. Update `startDemo()` to dispatch to the new step
+
+### Fix pointer positioning:
+1. The ☝️ fingertip is at the emoji's top edge
+2. Position with `top: elTop - 8` so the fingertip lands just above the element
+3. The blue target dot (●) shows the exact point being referenced
+
+### Debug why pointer isn't showing:
+1. Check `chrome.storage.session.get('demoActive')` in the console
+2. Verify `background.js` service worker is running (`chrome://extensions`)
+3. Look for `Sudo Pointer:` log messages in the page's console
+
+## Code Style
+
+- No semicolons (follow standard Chrome extension examples)
+- Async/await for asynchronous operations
+- Single quotes for strings
+- Descriptive variable names over comments
